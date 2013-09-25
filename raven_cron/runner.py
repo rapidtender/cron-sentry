@@ -60,7 +60,7 @@ class CommandReporter(object):
 
         # Hack to get the file size since the tempfile doesn't exist anymore
         buf.seek(0, SEEK_END)
-        if buf.tell() > MAX_MESSAGE_SIZE:
+        if buf.tell() < MAX_MESSAGE_SIZE:
             buf.seek(0)
         else:
             buf.seek(-MAX_MESSAGE_SIZE, SEEK_END)
