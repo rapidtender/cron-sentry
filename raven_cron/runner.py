@@ -55,6 +55,9 @@ class CommandReporter(object):
         buf.close()
         
     def report_fail(self, exit_status, buf, elapsed):
+        if self.dsn is None:
+            return
+
         # Hack to get the file size since the tempfile doesn't exist anymore
         buf.seek(0, SEEK_END)
         if buf.tell() > MAX_MESSAGE_SIZE:
@@ -66,9 +69,6 @@ class CommandReporter(object):
 
         message="Command %s exited with exit status %d" % (self.command, exit_status)
         #print message
-
-        if self.dsn is None:
-            return
         
         if self.client is None:
             self.client = Client(dsn=self.dsn)
