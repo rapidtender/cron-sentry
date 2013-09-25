@@ -60,21 +60,21 @@ class CommandReporter(object):
 
         # Hack to get the file size since the tempfile doesn't exist anymore
         buf.seek(0, SEEK_END)
-        if buf.tell() < MAX_MESSAGE_SIZE:
+        file_size = buf.tell()
+        if file_size < MAX_MESSAGE_SIZE:
             buf.seek(0)
+            last_lines = buf.read()
         else:
-            buf.seek(-MAX_MESSAGE_SIZE, SEEK_END)
-
-        last_lines = buf.read()
+            buf.seek(-(MAX_MESSAGE_SIZE-3), SEEK_END)
+            last_lines = '...' + buf.read()
 
         message="Command %s exited with exit status %d" % (self.command, exit_status)
-        #print message
-        
+
         if self.client is None:
             self.client = Client(dsn=self.dsn)
 
         # FIXME: extras are not displayed
-        self.client.captureMessage(
+        x = self.client.captureMessage(
             message,
             extra={
                 'command': self.command,
