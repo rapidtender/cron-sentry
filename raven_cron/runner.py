@@ -31,9 +31,7 @@ parser.add_argument(
 def run(args=argv[1:]):
     opts = parser.parse_args(args)
     runner = CommandReporter(**vars(opts))
-    exit_status = runner.run()
-    # FIXME: Don't do this if cron
-    exit(exit_status)
+    runner.run()
 
 class CommandReporter(object):
     def __init__(self, cmd, dsn):
@@ -55,8 +53,7 @@ class CommandReporter(object):
             self.report_fail(exit_status, buf, elapsed)
 
         buf.close()
-        return exit_status
-
+        
     def report_fail(self, exit_status, buf, elapsed):
         # Hack to get the file size since the tempfile doesn't exist anymore
         buf.seek(0, SEEK_END)
