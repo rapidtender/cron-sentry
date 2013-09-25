@@ -1,11 +1,15 @@
-from os import getenv, SEEK_END
-from raven import Client
-from subprocess import call
-from tempfile import TemporaryFile
 from argparse import ArgumentParser
-from sys import argv, exit
+from datetime import datetime
+from os import getenv, SEEK_END
+from string import join
+from subprocess import call
+from sys import argv
+from tempfile import TemporaryFile
 from time import time
+from uuid import uuid4
+
 from .version import VERSION
+from raven import Client
 
 MAX_MESSAGE_SIZE = 1000
 
@@ -40,7 +44,7 @@ class CommandReporter(object):
 
         self.dsn = dsn
         self.command = cmd
-        self.client = None
+        self.raven = None
 
     def run(self):
         buf = TemporaryFile()
@@ -63,22 +67,50 @@ class CommandReporter(object):
         file_size = buf.tell()
         if file_size < MAX_MESSAGE_SIZE:
             buf.seek(0)
-            last_lines = buf.read()
+            last_lines = buf.readlines()
         else:
             buf.seek(-(MAX_MESSAGE_SIZE-3), SEEK_END)
-            last_lines = '...' + buf.read()
+            last_lines = ['...'] + buf.readlines()
         
-        if self.client is None:
-            self.client = Client(dsn=self.dsn)
+        if self.raven is None:
+            self.raven = Client(dsn=self.dsn)
 
-        # FIXME: extras are not displayed
-        self.client.captureMessage(
-            message,
-            extra={
-                'command': self.command,
-                'exit_status': exit_status,
-                'last_lines': last_lines,
+        raven = self.raven
+        event_id = uuid4().hex
+        culprit = join(self.command)
+        message = u'Failed with exit status %d' % (exit_status,)
+
+        data = {
+            'culprit': culprit,
+            'event_id': event_id,
+            'extra': {
+                'sys.argv': argv[:],
+                'exit_status': 1,
             },
-            time_spent=elapsed
-        )
-
+            'level': 40,
+            'message': message,
+            'modules': {},
+            'platform': 'shell',
+            'logger': 'cron',
+            'project': raven.project,
+            'sentry.interfaces.Exception': {
+                'module': u'exceptions',
+                'type': 'WOOT',
+                'value': u'exceptions must be old-style classes or derived from BaseException, not str'
+            },
+            'sentry.interfaces.Stacktrace': {
+                'frames': [{
+                    'context_line': u'raise "woot"',
+                    'filename': 'raven_cron/runner.py',
+                    'lineno': len(last_lines),
+                    'pre_context': last_lines,
+                    'post_context': [],
+                }],
+            },
+            'server_name': raven.name,
+            'tags': {},
+            'time_spent': 0.010372161865234375,
+            'timestamp': datetime.utcnow(),
+        }
+        raven.send(**data)
+        print data.get('event_id')
