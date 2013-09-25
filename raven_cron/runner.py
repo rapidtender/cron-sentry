@@ -74,9 +74,8 @@ class CommandReporter(object):
             self.client = Client(dsn=self.dsn)
 
         # FIXME: extras are not displayed
-        self.client.capture(
-            'raven.events.Message',
-            message=message,
+        self.client.captureMessage(
+            message,
             extra={
                 'command': self.command,
                 'exit_status': exit_status,
