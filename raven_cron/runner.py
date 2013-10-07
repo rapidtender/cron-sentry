@@ -24,7 +24,7 @@ parser.add_argument(
 )
 parser.add_argument(
     'cmd',
-    nargs='*',
+    nargs='+',
     help='The command to run',
 )
 
