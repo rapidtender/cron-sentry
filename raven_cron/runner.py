@@ -49,7 +49,7 @@ class CommandReporter(object):
         exit_status = call(self.command, stdout=buf, stderr=buf, shell=True)
         
         if exit_status > 0:
-            elapsed = time() - start
+            elapsed = int((time() - start) * 1000)
             self.report_fail(exit_status, buf, elapsed)
 
         buf.close()
