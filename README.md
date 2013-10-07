@@ -38,3 +38,8 @@ SENTRY_DSN=https://<your_key>:<your_secret>@app.getsentry.com/<your_project_id>
 @reboot raven-cron ./my-process
 ```
 
+Misc
+----
+
+Copyright 2013 to MediaCore Technologies and licensed under the MIT license.
+
