@@ -3,7 +3,7 @@ from raven import Client
 from subprocess import call
 from tempfile import TemporaryFile
 from argparse import ArgumentParser
-from sys import argv, exit
+from sys import argv
 from time import time
 from .version import VERSION
 
@@ -68,14 +68,16 @@ class CommandReporter(object):
             buf.seek(-(MAX_MESSAGE_SIZE-3), SEEK_END)
             last_lines = '...' + buf.read()
 
-        message="Command %s exited with exit status %d" % (self.command, exit_status)
+        message="Command \"%s\" failed" % (self.command,)
 
         if self.client is None:
             self.client = Client(dsn=self.dsn)
 
-        # FIXME: extras are not displayed
-        x = self.client.captureMessage(
+        self.client.captureMessage(
             message,
+            data={
+                'logger': 'cron',
+            },
             extra={
                 'command': self.command,
                 'exit_status': exit_status,
