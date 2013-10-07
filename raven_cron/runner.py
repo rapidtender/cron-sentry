@@ -9,8 +9,10 @@ from .version import VERSION
 
 MAX_MESSAGE_SIZE = 1000
 
-parser = ArgumentParser(description='Wraps commands and reports failing ones to sentry')
-# FIXME: Should we also use a configuration file ?
+parser = ArgumentParser(
+    description='Wraps commands and reports failing ones to sentry.',
+    epilog='SENTRY_DSN can also be passed as an environment variable.',
+)
 parser.add_argument(
     '--dsn',
     metavar='SENTRY_DSN',
