@@ -16,7 +16,7 @@ setup(
         'Operating System :: OS Independent',
         'License :: OSI Approved :: MIT License',
     ],
-    url='http://github.com/zimbatm/raven-cron',
+    url='http://github.com/mediacore/raven-cron',
     packages=find_packages(),
     install_requires=['raven'],
     data_files=[],
