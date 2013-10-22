@@ -22,7 +22,7 @@ setup(
     data_files=[],
     entry_points={
         'console_scripts': [
-            'raven-cron = raven_cron:run',
+            'raven-cron = raven_cron.runner:run',
         ]
     }
 )
