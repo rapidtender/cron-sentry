@@ -32,7 +32,7 @@ parser.add_argument(
 )
 
 def update_dsn(opts):
-    """Update the Sentry DSN stored in a local config
+    """Update the Sentry DSN stored in local configs
 
     It's assumed that the file contains a DSN endpoint like this:
     https://public_key:secret_key@app.getsentry.com/project_id
@@ -42,14 +42,22 @@ def update_dsn(opts):
     """
 
     homedir = path.expanduser('~%s' % getuser())
-    conf_file = path.join(homedir, '.raven-cron')
-    if path.exists(conf_file):
-        with open(conf_file, "r") as conf:
-            opts.dsn = conf.read().rstrip()
+    home_conf_file = path.join(homedir, '.raven-cron')
+    system_conf_file = '/etc/raven-cron.conf'
+
+    conf_precedence = [home_conf_file, system_conf_file]
+    for conf_file in conf_precedence:
+        if path.exists(conf_file):
+            with open(conf_file, "r") as conf:
+                opts.dsn = conf.read().rstrip()
+            return
 
 def run(args=argv[1:]):
     opts = parser.parse_args(args)
-    update_dsn(opts)
+
+    # Command line takes precendence, otherwise check for local configs
+    if not opts.dsn:
+        update_dsn(opts)
     runner = CommandReporter(**vars(opts))
     runner.run()
 
