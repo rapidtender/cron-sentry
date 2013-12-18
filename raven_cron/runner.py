@@ -1,4 +1,5 @@
-from os import getenv, SEEK_END
+from getpass import getuser
+from os import getenv, path, SEEK_END
 from raven import Client
 from subprocess import call
 from tempfile import TemporaryFile
@@ -30,8 +31,25 @@ parser.add_argument(
     help='The command to run',
 )
 
+def update_dsn(opts):
+    """Update the Sentry DSN stored in a local config
+
+    It's assumed that the file contains a DSN endpoint like this:
+    https://public_key:secret_key@app.getsentry.com/project_id
+
+    It could easily be extended to override all settings if there
+    were more use cases.
+    """
+
+    homedir = path.expanduser('~%s' % getuser())
+    conf_file = path.join(homedir, '.raven-cron')
+    if path.exists(conf_file):
+        with open(conf_file, "r") as conf:
+            opts.dsn = conf.read().rstrip()
+
 def run(args=argv[1:]):
     opts = parser.parse_args(args)
+    update_dsn(opts)
     runner = CommandReporter(**vars(opts))
     runner.run()
 
