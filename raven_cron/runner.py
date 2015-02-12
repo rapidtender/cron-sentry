@@ -1,7 +1,8 @@
+import sys
 from getpass import getuser
 from os import getenv, path, SEEK_END
 from raven import Client
-from subprocess import call
+from subprocess import Popen, PIPE
 from tempfile import TemporaryFile
 from argparse import ArgumentParser
 from sys import argv
@@ -61,6 +62,7 @@ def run(args=argv[1:]):
     runner = CommandReporter(**vars(opts))
     runner.run()
 
+
 class CommandReporter(object):
     def __init__(self, cmd, dsn):
         self.dsn = dsn
@@ -68,32 +70,35 @@ class CommandReporter(object):
         self.client = None
 
     def run(self):
-        buf = TemporaryFile()
         start = time()
 
-        exit_status = call(self.command, stdout=buf, stderr=buf)
+        proc = Popen(self.command, stdout=PIPE, stderr=PIPE)
+        out, err = proc.communicate()
+        exit_status = proc.returncode
+
         
         if exit_status > 0:
             elapsed = int((time() - start) * 1000)
-            self.report_fail(exit_status, buf, elapsed)
+            self.report_fail(exit_status, out, err, elapsed)
 
-        buf.close()
+        sys.stdout.write(out)
+        sys.stderr.write(err)
+
         
-    def report_fail(self, exit_status, buf, elapsed):
+    def report_fail(self, exit_status, out, err, elapsed):
         if self.dsn is None:
             return
 
-        # Hack to get the file size since the tempfile doesn't exist anymore
-        buf.seek(0, SEEK_END)
-        file_size = buf.tell()
-        if file_size < MAX_MESSAGE_SIZE:
-            buf.seek(0)
-            last_lines = buf.read()
-        else:
-            buf.seek(-(MAX_MESSAGE_SIZE-3), SEEK_END)
-            last_lines = '...' + buf.read()
+        last_lines_stdout = out[-MAX_MESSAGE_SIZE:]
+        last_lines_stderr = err[-MAX_MESSAGE_SIZE:]
 
-        message="Command \"%s\" failed" % (self.command,)
+        if len(out) > MAX_MESSAGE_SIZE:
+            last_lines_stdout = last_lines_stdout[:-3] + '...'
+        if len(err) > MAX_MESSAGE_SIZE:
+            last_lines_stderr = last_lines_stderr[:-3] + '...'
+
+
+        message = "Command \"%s\" failed" % (self.command,)
 
         if self.client is None:
             self.client = Client(dsn=self.dsn)
@@ -106,7 +111,8 @@ class CommandReporter(object):
             extra={
                 'command': self.command,
                 'exit_status': exit_status,
-                'last_lines': last_lines,
+                'last_lines_stdout': last_lines_stdout,
+                'last_lines_stderr': last_lines_stderr,
             },
             time_spent=elapsed
         )

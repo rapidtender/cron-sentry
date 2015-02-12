@@ -5,4 +5,4 @@ release:
 
 test:
 	@pip install pytest mock
-	py.test -v tests/
+	PYTHONPATH=. py.test -v tests/
