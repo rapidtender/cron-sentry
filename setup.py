@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from raven_cron.version import VERSION
 
 setup(
-    name='raven-cron',
+    name='yipit-raven-cron',
     version=VERSION,
     author='Jonas Pfenniger',
     author_email='zimbatm@zimbatm.com',
