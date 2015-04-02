@@ -1,1 +1,1 @@
-VERSION = "0.3.0.yipit"
+VERSION = "0.3.1.yipit"
