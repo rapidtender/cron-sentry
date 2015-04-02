@@ -2,7 +2,7 @@ import sys
 from getpass import getuser
 from os import getenv, path, SEEK_END
 from raven import Client
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 from tempfile import TemporaryFile
 from argparse import ArgumentParser
 from sys import argv
@@ -72,31 +72,24 @@ class CommandReporter(object):
     def run(self):
         start = time()
 
-        proc = Popen(self.command, stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
-        exit_status = proc.returncode
+        with TemporaryFile() as stdout:
+            with TemporaryFile() as stderr:
+                exit_status = call(self.command, stdout=stdout, stderr=stderr)
+
+                last_lines_stdout = self._get_last_lines(stdout)
+                last_lines_stderr = self._get_last_lines(stderr)
+
+                if exit_status > 0:
+                    elapsed = int((time() - start) * 1000)
+                    self.report_fail(exit_status, last_lines_stdout, last_lines_stderr, elapsed)
+
+                sys.stdout.write(last_lines_stdout)
+                sys.stderr.write(last_lines_stderr)
 
         
-        if exit_status > 0:
-            elapsed = int((time() - start) * 1000)
-            self.report_fail(exit_status, out, err, elapsed)
-
-        sys.stdout.write(out)
-        sys.stderr.write(err)
-
-        
-    def report_fail(self, exit_status, out, err, elapsed):
+    def report_fail(self, exit_status, last_lines_stdout, last_lines_stderr, elapsed):
         if self.dsn is None:
             return
-
-        last_lines_stdout = out[-MAX_MESSAGE_SIZE:]
-        last_lines_stderr = err[-MAX_MESSAGE_SIZE:]
-
-        if len(out) > MAX_MESSAGE_SIZE:
-            last_lines_stdout = last_lines_stdout[:-3] + '...'
-        if len(err) > MAX_MESSAGE_SIZE:
-            last_lines_stderr = last_lines_stderr[:-3] + '...'
-
 
         message = "Command \"%s\" failed" % (self.command,)
 
@@ -117,3 +110,13 @@ class CommandReporter(object):
             time_spent=elapsed
         )
 
+    def _get_last_lines(self, buf):
+        buf.seek(0, SEEK_END)
+        file_size = buf.tell()
+        if file_size < MAX_MESSAGE_SIZE:
+            buf.seek(0)
+            last_lines = buf.read()
+        else:
+            buf.seek(-(MAX_MESSAGE_SIZE-3), SEEK_END)
+            last_lines = '...' + buf.read()
+        return last_lines

@@ -53,7 +53,7 @@ sys.exit(2)
 
 @mock.patch('raven_cron.runner.sys')
 @mock.patch('raven_cron.runner.Client')
-def test_reports_correctly_to_with_long_messages(ClientMock, sys_mock):
+def test_reports_correctly_to_with_long_messages_but_trims_stdout_and_stderr(ClientMock, sys_mock):
     command = [sys.executable, '-c', """
 import sys
 sys.stdout.write("a" * 2000)
@@ -64,9 +64,11 @@ sys.exit(2)
     client = ClientMock()
 
     reporter.run()
+    expected_stdout = '...{}'.format('a' * (MAX_MESSAGE_SIZE - 3))
+    expected_stderr = '...{}'.format('b' * (MAX_MESSAGE_SIZE - 3))
 
-    sys_mock.stdout.write.assert_called_with('a' * 2000)
-    sys_mock.stderr.write.assert_called_with('b' * 2000)
+    sys_mock.stdout.write.assert_called_with(expected_stdout)
+    sys_mock.stderr.write.assert_called_with(expected_stderr)
     client.captureMessage.assert_called_with(
         mock.ANY,
         time_spent=mock.ANY,
@@ -74,6 +76,6 @@ sys.exit(2)
         extra={
             'command': command,
             'exit_status': 2,
-            "last_lines_stdout": '{}...'.format('a' * (MAX_MESSAGE_SIZE - 3)),
-            "last_lines_stderr": '{}...'.format('b' * (MAX_MESSAGE_SIZE - 3)),
+            "last_lines_stdout": expected_stdout,
+            "last_lines_stderr": expected_stderr,
     })
