@@ -64,8 +64,8 @@ sys.exit(2)
     client = ClientMock()
 
     reporter.run()
-    expected_stdout = '...{}'.format('a' * (MAX_MESSAGE_SIZE - 3))
-    expected_stderr = '...{}'.format('b' * (MAX_MESSAGE_SIZE - 3))
+    expected_stdout = u'...{}'.format('a' * (MAX_MESSAGE_SIZE - 3))
+    expected_stderr = u'...{}'.format('b' * (MAX_MESSAGE_SIZE - 3))
 
     sys_mock.stdout.write.assert_called_with(expected_stdout)
     sys_mock.stderr.write.assert_called_with(expected_stderr)

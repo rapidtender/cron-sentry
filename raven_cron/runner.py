@@ -86,7 +86,7 @@ class CommandReporter(object):
                 sys.stdout.write(last_lines_stdout)
                 sys.stderr.write(last_lines_stderr)
 
-        
+
     def report_fail(self, exit_status, last_lines_stdout, last_lines_stderr, elapsed):
         if self.dsn is None:
             return
@@ -115,8 +115,8 @@ class CommandReporter(object):
         file_size = buf.tell()
         if file_size < MAX_MESSAGE_SIZE:
             buf.seek(0)
-            last_lines = buf.read()
+            last_lines = buf.read().decode('utf-8')
         else:
             buf.seek(-(MAX_MESSAGE_SIZE-3), SEEK_END)
-            last_lines = '...' + buf.read()
+            last_lines = u'...' + buf.read().decode('utf-8')
         return last_lines
