@@ -9,6 +9,13 @@ The original raven-cron doesn't preserve stdout neither stderr; it means that if
 Another problem is that it doesn't work with commands that accept options, definitively a bug. A [pull request was sent to them](https://github.com/mediacore/raven-cron/pull/4) to support options, but they never said anything, so this fork is currently being maintained by Yipit.
 
 
+This fork has the following patches:
+
+* Add support to command options (commit 75ade6d920cbb9f0e84575ca3ed8b568f945727d).
+* Preserve stdout and stderr (commit a604f3e0a104ab018fd1c9b35fe989fdd0834a4b).
+* Python 3 support, added by @Ian-Foote (commit a0b74c504e748a821fd07236204c52439cc1b1e9).
+
+
 ----
 
 
