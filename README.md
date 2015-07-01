@@ -6,7 +6,7 @@ This is a fork of https://github.com/mediacore/raven-cron. Why the fork?
 
 The original raven-cron doesn't preserve stdout neither stderr; it means that if a program outputs anything and exits sucessfully, original raven-cron ignores *all* output.
 
-Another problem is that it doesn't work with commands that accept options, definitively a bug. A (pull request was sent to them](https://github.com/mediacore/raven-cron/pull/4) to support options, but they never said anything, so this fork is currently being maintained by Yipit.
+Another problem is that it doesn't work with commands that accept options, definitively a bug. A [pull request was sent to them](https://github.com/mediacore/raven-cron/pull/4) to support options, but they never said anything, so this fork is currently being maintained by Yipit.
 
 
 ----
