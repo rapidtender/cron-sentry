@@ -43,8 +43,8 @@ def update_dsn(opts):
     """
 
     homedir = path.expanduser('~%s' % getuser())
-    home_conf_file = path.join(homedir, '.raven-cron')
-    system_conf_file = '/etc/raven-cron.conf'
+    home_conf_file = path.join(homedir, '.cron-sentry')
+    system_conf_file = '/etc/cron-sentry.conf'
 
     conf_precedence = [home_conf_file, system_conf_file]
     for conf_file in conf_precedence:

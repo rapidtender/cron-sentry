@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
-
-from raven_cron.version import VERSION
+from cron_sentry.version import VERSION
 
 setup(
-    name='yipit-raven-cron',
+    name='cron-sentry',
     version=VERSION,
     author='Jonas Pfenniger',
     author_email='zimbatm@zimbatm.com',
-    description='Raven-cron is a command-line wrapper that reports unsuccessful runs to Sentry (https://www.getsentry.com)',
+    description='Cron-Sentry is a command-line wrapper that reports unsuccessful runs to Sentry (https://www.getsentry.com)',
     license='MIT',
     classifiers=[
         'Topic :: Utilities',
@@ -16,13 +15,16 @@ setup(
         'Operating System :: OS Independent',
         'License :: OSI Approved :: MIT License',
     ],
-    url='http://github.com/mediacore/raven-cron',
+    url='http://github.com/yipit/cron-sentry',
     packages=find_packages(),
     install_requires=['raven'],
     data_files=[],
     entry_points={
         'console_scripts': [
-            'raven-cron = raven_cron.runner:run',
+            # `raven-cron` entry point is for backwards compatibility purposes.
+            # it should get removed in future releases
+            'raven-cron = cron_sentry.runner:run',
+            'cron-sentry = cron_sentry.runner:run',
         ]
     }
 )

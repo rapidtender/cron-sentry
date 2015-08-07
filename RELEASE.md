@@ -4,7 +4,7 @@ How to make a release
 Merge in all the changes, make sure master is happy and the current working
 directory clean.
 
-Bump the version in raven-cron/version.py following
+Bump the version in cron-sentry/version.py following
 [semver](http://semver.org). Let's call it $NEW_VERSION.
 
 Run `git changelog` from the git-extras package to update the changelog.

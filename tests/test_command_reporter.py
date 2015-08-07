@@ -1,9 +1,9 @@
 import mock
 import sys
-from raven_cron.runner import CommandReporter, MAX_MESSAGE_SIZE
+from cron_sentry.runner import CommandReporter, MAX_MESSAGE_SIZE
 
 
-@mock.patch('raven_cron.runner.Client')
+@mock.patch('cron_sentry.runner.Client')
 def test_command_reporter_accepts_parameters(ClientMock):
     reporter = CommandReporter(['date', '--invalid-option'], 'http://testdsn')
 
@@ -13,7 +13,7 @@ def test_command_reporter_accepts_parameters(ClientMock):
     assert client.captureMessage.called
 
 
-@mock.patch('raven_cron.runner.Client')
+@mock.patch('cron_sentry.runner.Client')
 def test_command_reporter_works_with_no_params_commands(ClientMock):
     reporter = CommandReporter(['date'], 'http://testdsn')
 
@@ -23,8 +23,8 @@ def test_command_reporter_works_with_no_params_commands(ClientMock):
     assert not client.captureMessage.called
 
 
-@mock.patch('raven_cron.runner.sys')
-@mock.patch('raven_cron.runner.Client')
+@mock.patch('cron_sentry.runner.sys')
+@mock.patch('cron_sentry.runner.Client')
 def test_command_reporter_keeps_stdout_and_stderr(ClientMock, sys_mock):
     command = [sys.executable, '-c', """
 import sys
@@ -51,8 +51,8 @@ sys.exit(2)
     })
 
 
-@mock.patch('raven_cron.runner.sys')
-@mock.patch('raven_cron.runner.Client')
+@mock.patch('cron_sentry.runner.sys')
+@mock.patch('cron_sentry.runner.Client')
 def test_reports_correctly_to_with_long_messages_but_trims_stdout_and_stderr(ClientMock, sys_mock):
     command = [sys.executable, '-c', """
 import sys
