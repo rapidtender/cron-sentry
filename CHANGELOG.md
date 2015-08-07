@@ -1,3 +1,8 @@
+0.4.1
+=====
+
+* Upload right files to PyPI
+
 0.4.0
 =====
 
