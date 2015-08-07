@@ -5,8 +5,8 @@ from cron_sentry.version import VERSION
 setup(
     name='cron-sentry',
     version=VERSION,
-    author='Jonas Pfenniger',
-    author_email='zimbatm@zimbatm.com',
+    author='Yipit Coders',
+    author_email='coders@yipit.com',
     description='Cron-Sentry is a command-line wrapper that reports unsuccessful runs to Sentry (https://www.getsentry.com)',
     license='MIT',
     classifiers=[

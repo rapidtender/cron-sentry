@@ -1,3 +1,14 @@
+0.4.0
+=====
+
+* Renamed fork from raven-cron to cron-sentry
+
+0.3.x
+=====
+* Yipit forks the project and keep it under the same name
+* Add support to command options (commit 75ade6d920cbb9f0e84575ca3ed8b568f945727d)
+* Preserve stdout and stderr (commit a604f3e0a104ab018fd1c9b35fe989fdd0834a4b)
+* Python 3 support, added by @Ian-Foote (commit a0b74c504e748a821fd07236204c52439cc1b1e9)
 
 0.2.0 / 2013-12-18 
 ==================
