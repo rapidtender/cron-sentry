@@ -1,6 +1,6 @@
 import mock
 import sys
-from cron_sentry.runner import CommandReporter, MAX_MESSAGE_SIZE, run
+from cron_sentry.runner import CommandReporter, MAX_MESSAGE_SIZE, run, parser
 
 
 @mock.patch('cron_sentry.runner.Client')
@@ -101,3 +101,17 @@ def test_command_line_should_support_command_with_double_dashes(CommandReporterM
     CommandReporterMock.assert_called_with(
         cmd=command[3:],
         dsn='http://testdsn')
+
+
+@mock.patch('cron_sentry.runner.sys')
+@mock.patch('argparse._sys')
+@mock.patch('cron_sentry.runner.CommandReporter')
+def test_should_display_help_text_and_exit_with_1_if_no_command_is_specified(CommandReporterMock, argparse_sys, cron_sentry_sys):
+    command = []
+
+    run(command)
+
+    cron_sentry_sys.stderr.write("ERROR: Missing command parameter!\n")
+    argparse_sys.stdout.write.assert_called_with(parser.format_usage())
+    cron_sentry_sys.exit.assert_called_with(1)
+    assert not CommandReporterMock.called

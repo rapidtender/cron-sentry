@@ -63,19 +63,23 @@ def run(args=argv[1:]):
     if not opts.dsn:
         update_dsn(opts)
 
-    # make cron-sentry work with both approaches:
-    #
-    #     cron-sentry --dsn http://dsn -- command --arg1 value1
-    #     cron-sentry --dsn http://dsn command --arg1 value1
-    #
-    # see more details at https://github.com/Yipit/cron-sentry/pull/6
-    if opts.cmd[0] == '--':
-        cmd = opts.cmd[1:]
+    if opts.cmd:
+        # make cron-sentry work with both approaches:
+        #
+        #     cron-sentry --dsn http://dsn -- command --arg1 value1
+        #     cron-sentry --dsn http://dsn command --arg1 value1
+        #
+        # see more details at https://github.com/Yipit/cron-sentry/pull/6
+        if opts.cmd[0] == '--':
+            cmd = opts.cmd[1:]
+        else:
+            cmd = opts.cmd
+        runner = CommandReporter(cmd=cmd, dsn=opts.dsn)
+        runner.run()
     else:
-        cmd = opts.cmd
-
-    runner = CommandReporter(cmd=cmd, dsn=opts.dsn)
-    runner.run()
+        sys.stderr.write("ERROR: Missing command parameter!\n")
+        parser.print_usage()
+        sys.exit(1)
 
 
 class CommandReporter(object):

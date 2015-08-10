@@ -1,6 +1,8 @@
 current
 =======
 
+* Make the `cmd` parameter required (https://github.com/Yipit/cron-sentry/issues/7)
+
 
 0.4.3
 =====
