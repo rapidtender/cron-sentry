@@ -59,7 +59,19 @@ def run(args=argv[1:]):
     # Command line takes precendence, otherwise check for local configs
     if not opts.dsn:
         update_dsn(opts)
-    runner = CommandReporter(**vars(opts))
+
+    # make cron-sentry work with both approaches:
+    #
+    #     cron-sentry --dsn http://dsn -- command --arg1 value1
+    #     cron-sentry --dsn http://dsn command --arg1 value1
+    #
+    # see more details at https://github.com/Yipit/cron-sentry/pull/6
+    if opts.cmd[0] == '--':
+        cmd = opts.cmd[1:]
+    else:
+        cmd = opts.cmd
+
+    runner = CommandReporter(cmd=cmd, dsn=opts.dsn)
     runner.run()
 
 

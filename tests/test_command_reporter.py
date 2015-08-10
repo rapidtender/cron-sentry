@@ -1,6 +1,6 @@
 import mock
 import sys
-from cron_sentry.runner import CommandReporter, MAX_MESSAGE_SIZE
+from cron_sentry.runner import CommandReporter, MAX_MESSAGE_SIZE, run
 
 
 @mock.patch('cron_sentry.runner.Client')
@@ -79,3 +79,25 @@ sys.exit(2)
             "last_lines_stdout": expected_stdout,
             "last_lines_stderr": expected_stderr,
     })
+
+
+@mock.patch('cron_sentry.runner.CommandReporter')
+def test_command_line_should_support_command_args_without_double_dashes(CommandReporterMock):
+    command = ['--dsn', 'http://testdsn', 'command', '--arg1', 'value1', '--arg2', 'value2']
+
+    run(command)
+
+    CommandReporterMock.assert_called_with(
+        cmd=command[2:],
+        dsn='http://testdsn')
+
+
+@mock.patch('cron_sentry.runner.CommandReporter')
+def test_command_line_should_support_command_with_double_dashes(CommandReporterMock):
+    command = ['--dsn', 'http://testdsn', '--', 'command', '--arg1', 'value1', '--arg2', 'value2']
+
+    run(command)
+
+    CommandReporterMock.assert_called_with(
+        cmd=command[3:],
+        dsn='http://testdsn')
