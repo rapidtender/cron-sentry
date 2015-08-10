@@ -4,7 +4,7 @@ from os import getenv, path, SEEK_END
 from raven import Client
 from subprocess import Popen, PIPE, call
 from tempfile import TemporaryFile
-from argparse import ArgumentParser
+from argparse import ArgumentParser, REMAINDER
 from sys import argv
 from time import time
 from .version import VERSION
@@ -28,7 +28,7 @@ parser.add_argument(
 )
 parser.add_argument(
     'cmd',
-    nargs='+',
+    nargs=REMAINDER,
     help='The command to run',
 )
 
