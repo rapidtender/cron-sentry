@@ -1,6 +1,13 @@
 current
 =======
 
+
+0.4.3
+=====
+
+* Fix PyPI package to include README.md (https://github.com/Yipit/cron-sentry/pull/8)
+
+
 0.4.2
 =====
 
