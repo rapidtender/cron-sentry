@@ -1,6 +1,9 @@
 current
 =======
 
+0.4.2
+=====
+
 * Change argparse to use REMAINDER instead of '+' for `cmd`. More details at https://github.com/Yipit/cron-sentry/pull/6
 * Make cron-sentry compatible with old and new way of specifying arguments in the command line
 * Change usage message to have `cmd [arg ...]` rather than only `...`
