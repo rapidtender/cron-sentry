@@ -12,8 +12,11 @@ from .version import VERSION
 MAX_MESSAGE_SIZE = 1000
 
 parser = ArgumentParser(
-    description='Wraps commands and reports failing ones to sentry.',
-    epilog='SENTRY_DSN can also be passed as an environment variable.',
+    description='Wraps commands and reports those that fail to Sentry.',
+    epilog=('The Sentry server address can also be specified through ' +
+            'the SENTRY_DSN environment variable ' +
+            '(and the --dsn option can be omitted).'),
+    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [--version] cmd [arg ...]',
 )
 parser.add_argument(
     '--dsn',
