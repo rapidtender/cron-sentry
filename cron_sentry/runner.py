@@ -30,6 +30,11 @@ parser.add_argument(
     help='The maximum characters of a string that should be sent to Sentry',
 )
 parser.add_argument(
+    '--max-list-length',
+    type=int,
+    help='The maximum number of items in a list-like object that should be sent to Sentry',
+)
+parser.add_argument(
     '--version',
     action='version',
     version=VERSION,
@@ -79,7 +84,12 @@ def run(args=argv[1:]):
             cmd = opts.cmd[1:]
         else:
             cmd = opts.cmd
-        runner = CommandReporter(cmd=cmd, dsn=opts.dsn, string_max_length=opts.string_max_length)
+        runner = CommandReporter(
+            cmd=cmd,
+            dsn=opts.dsn,
+            string_max_length=opts.string_max_length,
+            max_list_length=opts.max_list_length,
+        )
         sys.exit(runner.run())
     else:
         sys.stderr.write("ERROR: Missing command parameter!\n")
@@ -88,10 +98,11 @@ def run(args=argv[1:]):
 
 
 class CommandReporter(object):
-    def __init__(self, cmd, dsn, string_max_length=None):
+    def __init__(self, cmd, dsn, string_max_length=None, max_list_length=None):
         self.dsn = dsn
         self.command = cmd
         self.string_max_length = string_max_length
+        self.max_list_length = max_list_length
 
     def run(self):
         start = time()
@@ -117,7 +128,11 @@ class CommandReporter(object):
 
         message = "Command \"%s\" failed" % (self.command,)
 
-        client = Client(dsn=self.dsn, string_max_length=self.string_max_length)
+        client = Client(
+            dsn=self.dsn,
+            string_max_length=self.string_max_length,
+            max_list_length=self.max_list_length,
+        )
 
         client.captureMessage(
             message,
