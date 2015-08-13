@@ -92,7 +92,6 @@ def test_command_line_should_support_command_args_without_double_dashes(CommandR
         cmd=command[2:],
         dsn='http://testdsn',
         string_max_length=None,
-        max_list_length=None,
     )
 
 
@@ -107,7 +106,6 @@ def test_command_line_should_support_command_with_double_dashes(CommandReporterM
         cmd=command[3:],
         dsn='http://testdsn',
         string_max_length=None,
-        max_list_length=None,
     )
 
 
@@ -147,22 +145,4 @@ def test_should_be_able_to_change_string_max(ClientMock, sys_mock):
     ClientMock.assert_called_with(
         dsn='http://testdsn',
         string_max_length=123,
-        max_list_length=None,
-    )
-
-
-@mock.patch('cron_sentry.runner.sys')
-@mock.patch('cron_sentry.runner.Client')
-def test_should_be_able_to_change_list_max(ClientMock, sys_mock):
-    command = [
-        '--dsn', 'http://testdsn',
-        '--max-list-length', '123',
-        sys.executable, '-c', 'import sys; sys.exit(1)']
-
-    run(command)
-
-    ClientMock.assert_called_with(
-        dsn='http://testdsn',
-        string_max_length=None,
-        max_list_length=123,
     )

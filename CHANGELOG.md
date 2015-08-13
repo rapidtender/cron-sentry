@@ -4,7 +4,6 @@ current
 * Make the `cmd` parameter required (https://github.com/Yipit/cron-sentry/issues/7)
 * Preserve exit status code from the specified command (https://github.com/Yipit/cron-sentry/issues/4)
 * Add parameter `string-max-length` to command line (https://github.com/Yipit/cron-sentry/issues/9)
-* Add parameter `max-list-length` to command line (https://github.com/Yipit/cron-sentry/issues/9)
 
 
 0.4.3

@@ -26,9 +26,6 @@ optional arguments:
   --string-max-length STRING_MAX_LENGTH
                         The maximum characters of a string that should be sent
                         to Sentry
-  --max-list-length MAX_LIST_LENGTH
-                        The maximum number of items in a list-like object that
-                        should be sent to Sentry
   --version             show program's version number and exit
 
 The Sentry server address can also be specified through the SENTRY_DSN
