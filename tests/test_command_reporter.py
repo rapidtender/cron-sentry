@@ -81,8 +81,9 @@ sys.exit(2)
     })
 
 
+@mock.patch('cron_sentry.runner.sys')
 @mock.patch('cron_sentry.runner.CommandReporter')
-def test_command_line_should_support_command_args_without_double_dashes(CommandReporterMock):
+def test_command_line_should_support_command_args_without_double_dashes(CommandReporterMock, sys_mock):
     command = ['--dsn', 'http://testdsn', 'command', '--arg1', 'value1', '--arg2', 'value2']
 
     run(command)
@@ -92,8 +93,9 @@ def test_command_line_should_support_command_args_without_double_dashes(CommandR
         dsn='http://testdsn')
 
 
+@mock.patch('cron_sentry.runner.sys')
 @mock.patch('cron_sentry.runner.CommandReporter')
-def test_command_line_should_support_command_with_double_dashes(CommandReporterMock):
+def test_command_line_should_support_command_with_double_dashes(CommandReporterMock, sys_mock):
     command = ['--dsn', 'http://testdsn', '--', 'command', '--arg1', 'value1', '--arg2', 'value2']
 
     run(command)
@@ -108,10 +110,19 @@ def test_command_line_should_support_command_with_double_dashes(CommandReporterM
 @mock.patch('cron_sentry.runner.CommandReporter')
 def test_should_display_help_text_and_exit_with_1_if_no_command_is_specified(CommandReporterMock, argparse_sys, cron_sentry_sys):
     command = []
-
     run(command)
 
-    cron_sentry_sys.stderr.write("ERROR: Missing command parameter!\n")
+    cron_sentry_sys.stderr.write.assert_called_with("ERROR: Missing command parameter!\n")
     argparse_sys.stdout.write.assert_called_with(parser.format_usage())
     cron_sentry_sys.exit.assert_called_with(1)
     assert not CommandReporterMock.called
+
+
+@mock.patch('cron_sentry.runner.sys')
+@mock.patch('cron_sentry.runner.Client')
+def test_exit_status_code_should_be_preserved(ClientMock, sys_mock):
+    command = [sys.executable, '-c', 'import sys; sys.exit(123)']
+
+    run(command)
+
+    sys_mock.exit.assert_called_with(123)

@@ -75,7 +75,7 @@ def run(args=argv[1:]):
         else:
             cmd = opts.cmd
         runner = CommandReporter(cmd=cmd, dsn=opts.dsn)
-        runner.run()
+        sys.exit(runner.run())
     else:
         sys.stderr.write("ERROR: Missing command parameter!\n")
         parser.print_usage()
@@ -104,7 +104,7 @@ class CommandReporter(object):
 
                 sys.stdout.write(last_lines_stdout)
                 sys.stderr.write(last_lines_stderr)
-
+                return exit_status
 
     def report_fail(self, exit_status, last_lines_stdout, last_lines_stderr, elapsed):
         if self.dsn is None:

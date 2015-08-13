@@ -2,6 +2,7 @@ current
 =======
 
 * Make the `cmd` parameter required (https://github.com/Yipit/cron-sentry/issues/7)
+* Preserve exit status code from the specified command.
 
 
 0.4.3
