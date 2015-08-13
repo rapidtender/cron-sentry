@@ -25,6 +25,11 @@ parser.add_argument(
     help='Sentry server address',
 )
 parser.add_argument(
+    '--string-max-length',
+    type=int,
+    help='The maximum characters of a string that should be sent to Sentry',
+)
+parser.add_argument(
     '--version',
     action='version',
     version=VERSION,
@@ -74,7 +79,7 @@ def run(args=argv[1:]):
             cmd = opts.cmd[1:]
         else:
             cmd = opts.cmd
-        runner = CommandReporter(cmd=cmd, dsn=opts.dsn)
+        runner = CommandReporter(cmd=cmd, dsn=opts.dsn, string_max_length=opts.string_max_length)
         sys.exit(runner.run())
     else:
         sys.stderr.write("ERROR: Missing command parameter!\n")
@@ -83,10 +88,10 @@ def run(args=argv[1:]):
 
 
 class CommandReporter(object):
-    def __init__(self, cmd, dsn):
+    def __init__(self, cmd, dsn, string_max_length=None):
         self.dsn = dsn
         self.command = cmd
-        self.client = None
+        self.string_max_length = string_max_length
 
     def run(self):
         start = time()
@@ -112,10 +117,9 @@ class CommandReporter(object):
 
         message = "Command \"%s\" failed" % (self.command,)
 
-        if self.client is None:
-            self.client = Client(dsn=self.dsn)
+        client = Client(dsn=self.dsn, string_max_length=self.string_max_length)
 
-        self.client.captureMessage(
+        client.captureMessage(
             message,
             data={
                 'logger': 'cron',

@@ -90,7 +90,9 @@ def test_command_line_should_support_command_args_without_double_dashes(CommandR
 
     CommandReporterMock.assert_called_with(
         cmd=command[2:],
-        dsn='http://testdsn')
+        dsn='http://testdsn',
+        string_max_length=None,
+    )
 
 
 @mock.patch('cron_sentry.runner.sys')
@@ -102,7 +104,9 @@ def test_command_line_should_support_command_with_double_dashes(CommandReporterM
 
     CommandReporterMock.assert_called_with(
         cmd=command[3:],
-        dsn='http://testdsn')
+        dsn='http://testdsn',
+        string_max_length=None,
+    )
 
 
 @mock.patch('cron_sentry.runner.sys')
@@ -126,3 +130,19 @@ def test_exit_status_code_should_be_preserved(ClientMock, sys_mock):
     run(command)
 
     sys_mock.exit.assert_called_with(123)
+
+
+@mock.patch('cron_sentry.runner.sys')
+@mock.patch('cron_sentry.runner.Client')
+def test_should_be_able_to_change_string_max(ClientMock, sys_mock):
+    command = [
+        '--dsn', 'http://testdsn',
+        '--string-max-length', '123',
+        sys.executable, '-c', 'import sys; sys.exit(1)']
+
+    run(command)
+
+    ClientMock.assert_called_with(
+        dsn='http://testdsn',
+        string_max_length=123,
+    )

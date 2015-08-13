@@ -18,12 +18,15 @@ usage: cron-sentry [-h] [--dsn SENTRY_DSN] [--version] cmd [arg ...]
 Wraps commands and reports those that fail to Sentry.
 
 positional arguments:
-  cmd               The command to run
+  cmd                   The command to run
 
 optional arguments:
-  -h, --help        show this help message and exit
-  --dsn SENTRY_DSN  Sentry server address
-  --version         show program's version number and exit
+  -h, --help            show this help message and exit
+  --dsn SENTRY_DSN      Sentry server address
+  --string-max-length STRING_MAX_LENGTH
+                        The maximum characters of a string that should be sent
+                        to Sentry
+  --version             show program's version number and exit
 
 The Sentry server address can also be specified through the SENTRY_DSN
 environment variable (and the --dsn option can be omitted).
