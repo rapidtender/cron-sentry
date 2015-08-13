@@ -16,7 +16,7 @@ parser = ArgumentParser(
     epilog=('The Sentry server address can also be specified through ' +
             'the SENTRY_DSN environment variable ' +
             '(and the --dsn option can be omitted).'),
-    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [--version] cmd [arg ...]',
+    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [--string-max-length STRING_MAX_LENGTH] [--version] cmd [arg ...]',
 )
 parser.add_argument(
     '--dsn',
@@ -27,7 +27,7 @@ parser.add_argument(
 parser.add_argument(
     '--string-max-length',
     type=int,
-    help='The maximum characters of a string that should be sent to Sentry',
+    help='The maximum characters of a string that should be sent to Sentry (use -1 to send all characters)',
 )
 parser.add_argument(
     '--version',
