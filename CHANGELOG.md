@@ -1,6 +1,10 @@
 current
 =======
 
+
+0.5.0
+=====
+
 * Replace `string-max-length` by `max-message-length`/`-M`. This is not compatible with version 0.4.4.
 
 
