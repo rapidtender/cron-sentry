@@ -9,14 +9,20 @@ from sys import argv
 from time import time
 from .version import VERSION
 
-MAX_MESSAGE_SIZE = 1000
+
+# More info:
+# * https://github.com/getsentry/sentry/blob/b44cdaa27e1ba3f27d217f7f7f45efaa5e742d0f/src/sentry/conf/server.py#L742-L744
+# * https://github.com/getsentry/sentry/blob/5d6b0fef0f4446128730d9c1f5940e7f071a4509/src/sentry/utils/safe.py#L68-L76
+# the value is 4094 because of `_size += 2` in the code linked above
+DEFAULT_MAX_MESSAGE_LENGTH = 4094
+
 
 parser = ArgumentParser(
     description='Wraps commands and reports those that fail to Sentry.',
     epilog=('The Sentry server address can also be specified through ' +
             'the SENTRY_DSN environment variable ' +
             '(and the --dsn option can be omitted).'),
-    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [--string-max-length STRING_MAX_LENGTH] [--version] cmd [arg ...]',
+    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M MAX_MESSAGE_LENGTH] [--version] cmd [arg ...]',
 )
 parser.add_argument(
     '--dsn',
@@ -24,10 +30,12 @@ parser.add_argument(
     default=getenv('SENTRY_DSN'),
     help='Sentry server address',
 )
+
 parser.add_argument(
-    '--string-max-length',
+    '-M', '--max-message-length',
     type=int,
-    help='The maximum characters of a string that should be sent to Sentry (use -1 to send all characters)',
+    default=DEFAULT_MAX_MESSAGE_LENGTH,
+    help='The maximum characters of a string that should be sent to Sentry (defaults to {})'.format(DEFAULT_MAX_MESSAGE_LENGTH),
 )
 parser.add_argument(
     '--version',
@@ -79,7 +87,11 @@ def run(args=argv[1:]):
             cmd = opts.cmd[1:]
         else:
             cmd = opts.cmd
-        runner = CommandReporter(cmd=cmd, dsn=opts.dsn, string_max_length=opts.string_max_length)
+        runner = CommandReporter(
+            cmd=cmd,
+            dsn=opts.dsn,
+            max_message_length=opts.max_message_length,
+        )
         sys.exit(runner.run())
     else:
         sys.stderr.write("ERROR: Missing command parameter!\n")
@@ -88,10 +100,10 @@ def run(args=argv[1:]):
 
 
 class CommandReporter(object):
-    def __init__(self, cmd, dsn, string_max_length=None):
+    def __init__(self, cmd, dsn, max_message_length):
         self.dsn = dsn
         self.command = cmd
-        self.string_max_length = string_max_length
+        self.max_message_length = max_message_length
 
     def run(self):
         start = time()
@@ -117,7 +129,7 @@ class CommandReporter(object):
 
         message = "Command \"%s\" failed" % (self.command,)
 
-        client = Client(dsn=self.dsn, string_max_length=self.string_max_length)
+        client = Client(dsn=self.dsn, string_max_length=-1)
 
         client.captureMessage(
             message,
@@ -136,10 +148,10 @@ class CommandReporter(object):
     def _get_last_lines(self, buf):
         buf.seek(0, SEEK_END)
         file_size = buf.tell()
-        if file_size < MAX_MESSAGE_SIZE:
+        if file_size < self.max_message_length:
             buf.seek(0)
             last_lines = buf.read().decode('utf-8')
         else:
-            buf.seek(-(MAX_MESSAGE_SIZE-3), SEEK_END)
+            buf.seek(-(self.max_message_length - 3), SEEK_END)
             last_lines = u'...' + buf.read().decode('utf-8')
         return last_lines

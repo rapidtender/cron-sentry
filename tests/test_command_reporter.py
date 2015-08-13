@@ -1,11 +1,11 @@
 import mock
 import sys
-from cron_sentry.runner import CommandReporter, MAX_MESSAGE_SIZE, run, parser
+from cron_sentry.runner import CommandReporter, DEFAULT_MAX_MESSAGE_LENGTH, run, parser
 
 
 @mock.patch('cron_sentry.runner.Client')
 def test_command_reporter_accepts_parameters(ClientMock):
-    reporter = CommandReporter(['date', '--invalid-option'], 'http://testdsn')
+    reporter = CommandReporter(['date', '--invalid-option'], 'http://testdsn', DEFAULT_MAX_MESSAGE_LENGTH)
 
     reporter.run()
 
@@ -15,7 +15,7 @@ def test_command_reporter_accepts_parameters(ClientMock):
 
 @mock.patch('cron_sentry.runner.Client')
 def test_command_reporter_works_with_no_params_commands(ClientMock):
-    reporter = CommandReporter(['date'], 'http://testdsn')
+    reporter = CommandReporter(['date'], 'http://testdsn', DEFAULT_MAX_MESSAGE_LENGTH)
 
     reporter.run()
 
@@ -32,7 +32,7 @@ sys.stdout.write("test-out")
 sys.stderr.write("test-err")
 sys.exit(2)
 """]
-    reporter = CommandReporter(command, 'http://testdsn')
+    reporter = CommandReporter(command, 'http://testdsn', DEFAULT_MAX_MESSAGE_LENGTH)
     client = ClientMock()
 
     reporter.run()
@@ -56,16 +56,16 @@ sys.exit(2)
 def test_reports_correctly_to_with_long_messages_but_trims_stdout_and_stderr(ClientMock, sys_mock):
     command = [sys.executable, '-c', """
 import sys
-sys.stdout.write("a" * 2000)
-sys.stderr.write("b" * 2000)
+sys.stdout.write("a" * 20000)
+sys.stderr.write("b" * 20000)
 sys.exit(2)
 """]
-    reporter = CommandReporter(command, 'http://testdsn')
+    reporter = CommandReporter(command, 'http://testdsn', DEFAULT_MAX_MESSAGE_LENGTH)
     client = ClientMock()
 
     reporter.run()
-    expected_stdout = u'...{}'.format('a' * (MAX_MESSAGE_SIZE - 3))
-    expected_stderr = u'...{}'.format('b' * (MAX_MESSAGE_SIZE - 3))
+    expected_stdout = u'...{}'.format('a' * (DEFAULT_MAX_MESSAGE_LENGTH - 3))
+    expected_stderr = u'...{}'.format('b' * (DEFAULT_MAX_MESSAGE_LENGTH - 3))
 
     sys_mock.stdout.write.assert_called_with(expected_stdout)
     sys_mock.stderr.write.assert_called_with(expected_stderr)
@@ -91,7 +91,7 @@ def test_command_line_should_support_command_args_without_double_dashes(CommandR
     CommandReporterMock.assert_called_with(
         cmd=command[2:],
         dsn='http://testdsn',
-        string_max_length=None,
+        max_message_length=DEFAULT_MAX_MESSAGE_LENGTH,
     )
 
 
@@ -105,7 +105,7 @@ def test_command_line_should_support_command_with_double_dashes(CommandReporterM
     CommandReporterMock.assert_called_with(
         cmd=command[3:],
         dsn='http://testdsn',
-        string_max_length=None,
+        max_message_length=DEFAULT_MAX_MESSAGE_LENGTH,
     )
 
 
@@ -132,17 +132,36 @@ def test_exit_status_code_should_be_preserved(ClientMock, sys_mock):
     sys_mock.exit.assert_called_with(123)
 
 
+
 @mock.patch('cron_sentry.runner.sys')
 @mock.patch('cron_sentry.runner.Client')
-def test_should_be_able_to_change_string_max(ClientMock, sys_mock):
+def test_should_trim_stdout_and_stderr_based_on_command_line(ClientMock, sys_mock):
     command = [
-        '--dsn', 'http://testdsn',
-        '--string-max-length', '123',
-        sys.executable, '-c', 'import sys; sys.exit(1)']
+    '--dsn', 'http://testdsn',
+    '--max-message-length', '100',
+    sys.executable, '-c', """
+import sys
+sys.stdout.write("a" * 20000 + "end")
+sys.stderr.write("b" * 20000 + "end")
+sys.exit(2)
+"""]
 
     run(command)
 
-    ClientMock.assert_called_with(
-        dsn='http://testdsn',
-        string_max_length=123,
-    )
+    # -3 refers to "..." and "end"
+    expected_stdout = u'...{}end'.format('a' * (100 - 3 - 3))
+    expected_stderr = u'...{}end'.format('b' * (100 - 3 - 3))
+
+    sys_mock.stdout.write.assert_called_with(expected_stdout)
+    sys_mock.stderr.write.assert_called_with(expected_stderr)
+    client = ClientMock()
+    client.captureMessage.assert_called_with(
+        mock.ANY,
+        time_spent=mock.ANY,
+        data=mock.ANY,
+        extra={
+            'command': mock.ANY,
+            'exit_status': mock.ANY,
+            "last_lines_stdout": expected_stdout,
+            "last_lines_stderr": expected_stderr,
+    })
