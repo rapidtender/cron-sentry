@@ -22,7 +22,7 @@ parser = ArgumentParser(
     epilog=('The Sentry server address can also be specified through ' +
             'the SENTRY_DSN environment variable ' +
             '(and the --dsn option can be omitted).'),
-    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M MAX_MESSAGE_LENGTH] [--version] cmd [arg ...]',
+    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M MAX_MESSAGE_LENGTH] [--quiet] [--version] cmd [arg ...]',
 )
 parser.add_argument(
     '--dsn',
@@ -36,6 +36,12 @@ parser.add_argument(
     type=int,
     default=DEFAULT_MAX_MESSAGE_LENGTH,
     help='The maximum characters of a string that should be sent to Sentry (defaults to {})'.format(DEFAULT_MAX_MESSAGE_LENGTH),
+)
+parser.add_argument(
+    '-q', '--quiet',
+    action='store_true',
+    default=False,
+    help='suppress all command output'
 )
 parser.add_argument(
     '--version',
@@ -91,6 +97,7 @@ def run(args=argv[1:]):
             cmd=cmd,
             dsn=opts.dsn,
             max_message_length=opts.max_message_length,
+            quiet=opts.quiet
         )
         sys.exit(runner.run())
     else:
@@ -100,10 +107,11 @@ def run(args=argv[1:]):
 
 
 class CommandReporter(object):
-    def __init__(self, cmd, dsn, max_message_length):
+    def __init__(self, cmd, dsn, max_message_length, quiet=False):
         self.dsn = dsn
         self.command = cmd
         self.max_message_length = max_message_length
+        self.quiet = quiet
 
     def run(self):
         start = time()
@@ -119,8 +127,10 @@ class CommandReporter(object):
                     elapsed = int((time() - start) * 1000)
                     self.report_fail(exit_status, last_lines_stdout, last_lines_stderr, elapsed)
 
-                sys.stdout.write(last_lines_stdout)
-                sys.stderr.write(last_lines_stderr)
+                if not self.quiet:
+                    sys.stdout.write(last_lines_stdout)
+                    sys.stderr.write(last_lines_stderr)
+
                 return exit_status
 
     def report_fail(self, exit_status, last_lines_stdout, last_lines_stderr, elapsed):

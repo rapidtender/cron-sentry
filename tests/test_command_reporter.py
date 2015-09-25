@@ -92,6 +92,7 @@ def test_command_line_should_support_command_args_without_double_dashes(CommandR
         cmd=command[2:],
         dsn='http://testdsn',
         max_message_length=DEFAULT_MAX_MESSAGE_LENGTH,
+        quiet=False
     )
 
 
@@ -106,6 +107,7 @@ def test_command_line_should_support_command_with_double_dashes(CommandReporterM
         cmd=command[3:],
         dsn='http://testdsn',
         max_message_length=DEFAULT_MAX_MESSAGE_LENGTH,
+        quiet=False
     )
 
 
@@ -154,6 +156,39 @@ sys.exit(2)
 
     sys_mock.stdout.write.assert_called_with(expected_stdout)
     sys_mock.stderr.write.assert_called_with(expected_stderr)
+    client = ClientMock()
+    client.captureMessage.assert_called_with(
+        mock.ANY,
+        time_spent=mock.ANY,
+        data=mock.ANY,
+        extra={
+            'command': mock.ANY,
+            'exit_status': mock.ANY,
+            "last_lines_stdout": expected_stdout,
+            "last_lines_stderr": expected_stderr,
+    })
+
+@mock.patch('cron_sentry.runner.sys')
+@mock.patch('cron_sentry.runner.Client')
+def test_should_suppress_stdout_and_stderr_based_on_command_line(ClientMock, sys_mock):
+    command = [
+    '--dsn', 'http://testdsn',
+    '--quiet',
+    sys.executable, '-c', """
+import sys
+sys.stdout.write("a" * 100 + "end")
+sys.stderr.write("b" * 100 + "end")
+sys.exit(2)
+"""]
+
+    run(command)
+
+    expected_stdout = u"a" * 100 + "end"
+    expected_stderr = u"b" * 100 + "end"
+
+    assert not sys_mock.stdout.write.called
+    assert not sys_mock.stderr.write.called
+
     client = ClientMock()
     client.captureMessage.assert_called_with(
         mock.ANY,
