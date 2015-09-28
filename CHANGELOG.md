@@ -1,6 +1,7 @@
 current
 =======
 
+* Add parameter --quiet for suppressing cmd output.
 
 0.5.0
 =====
