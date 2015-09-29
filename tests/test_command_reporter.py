@@ -64,8 +64,8 @@ sys.exit(2)
     client = ClientMock()
 
     reporter.run()
-    expected_stdout = u'...{0}'.format('a' * (DEFAULT_MAX_MESSAGE_LENGTH - 3))
-    expected_stderr = u'...{0}'.format('b' * (DEFAULT_MAX_MESSAGE_LENGTH - 3))
+    expected_stdout = '...{0}'.format('a' * (DEFAULT_MAX_MESSAGE_LENGTH - 3))
+    expected_stderr = '...{0}'.format('b' * (DEFAULT_MAX_MESSAGE_LENGTH - 3))
 
     sys_mock.stdout.write.assert_called_with(expected_stdout)
     sys_mock.stderr.write.assert_called_with(expected_stderr)
@@ -151,8 +151,8 @@ sys.exit(2)
     run(command)
 
     # -3 refers to "..." and "end"
-    expected_stdout = u'...{0}end'.format('a' * (100 - 3 - 3))
-    expected_stderr = u'...{0}end'.format('b' * (100 - 3 - 3))
+    expected_stdout = '...{0}end'.format('a' * (100 - 3 - 3))
+    expected_stderr = '...{0}end'.format('b' * (100 - 3 - 3))
 
     sys_mock.stdout.write.assert_called_with(expected_stdout)
     sys_mock.stderr.write.assert_called_with(expected_stderr)
@@ -183,8 +183,8 @@ sys.exit(2)
 
     run(command)
 
-    expected_stdout = u"a" * 100 + "end"
-    expected_stderr = u"b" * 100 + "end"
+    expected_stdout = "a" * 100 + "end"
+    expected_stderr = "b" * 100 + "end"
 
     assert not sys_mock.stdout.write.called
     assert not sys_mock.stderr.write.called
