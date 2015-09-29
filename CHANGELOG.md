@@ -1,6 +1,10 @@
 current
 =======
 
+
+0.6.0
+=====
+
 * Require `argparse` in setup.py if running on Python 2.6 or older
 * Add Python 3 compatibility
 
