@@ -163,5 +163,5 @@ class CommandReporter(object):
             last_lines = buf.read().decode('utf-8')
         else:
             buf.seek(-(self.max_message_length - 3), SEEK_END)
-            last_lines = u'...' + buf.read().decode('utf-8')
+            last_lines = '...' + buf.read().decode('utf-8')
         return last_lines
