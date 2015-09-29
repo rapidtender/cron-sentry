@@ -1,6 +1,8 @@
 release:
 	python setup.py sdist register upload
 
-test:
+test: install_test_deps
+	@py.test -v tests/
+
+install_test_deps:
 	@pip install pytest mock raven
-	PYTHONPATH=. py.test -v tests/
