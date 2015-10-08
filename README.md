@@ -13,7 +13,7 @@ Usage
 
 ```
 $ cron-sentry --help
-usage: cron-sentry [-h] [--dsn SENTRY_DSN] [-M MAX_MESSAGE_LENGTH] [--quiet] [--version] cmd [arg ...]
+usage: cron-sentry [-h] [--dsn SENTRY_DSN] [-M STRING_MAX_LENGTH] [--quiet] [--version] cmd [arg ...]
 
 Wraps commands and reports those that fail to Sentry.
 
@@ -23,7 +23,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --dsn SENTRY_DSN      Sentry server address
-  -M MAX_MESSAGE_LENGTH, --max-message-length MAX_MESSAGE_LENGTH
+  -M STRING_MAX_LENGTH, --string-max-length STRING_MAX_LENGTH
                         The maximum characters of a string that should be sent
                         to Sentry (defaults to 4094)
   -q, --quiet           suppress all command output

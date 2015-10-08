@@ -2,7 +2,7 @@ import sys
 from getpass import getuser
 from os import getenv, path, SEEK_END
 from raven import Client
-from subprocess import Popen, PIPE, call
+from subprocess import call
 from tempfile import TemporaryFile
 from argparse import ArgumentParser, REMAINDER
 from sys import argv
@@ -14,7 +14,7 @@ from .version import VERSION
 # * https://github.com/getsentry/sentry/blob/b44cdaa27e1ba3f27d217f7f7f45efaa5e742d0f/src/sentry/conf/server.py#L742-L744
 # * https://github.com/getsentry/sentry/blob/5d6b0fef0f4446128730d9c1f5940e7f071a4509/src/sentry/utils/safe.py#L68-L76
 # the value is 4094 because of `_size += 2` in the code linked above
-DEFAULT_MAX_MESSAGE_LENGTH = 4094
+DEFAULT_STRING_MAX_LENGTH = 4094
 
 
 parser = ArgumentParser(
@@ -22,7 +22,7 @@ parser = ArgumentParser(
     epilog=('The Sentry server address can also be specified through ' +
             'the SENTRY_DSN environment variable ' +
             '(and the --dsn option can be omitted).'),
-    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M MAX_MESSAGE_LENGTH] [--quiet] [--version] cmd [arg ...]',
+    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M STRING_MAX_LENGHT] [--quiet] [--version] cmd [arg ...]',
 )
 parser.add_argument(
     '--dsn',
@@ -32,10 +32,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '-M', '--max-message-length',
+    '-M', '--string-max-length', '--max-message-length',
     type=int,
-    default=DEFAULT_MAX_MESSAGE_LENGTH,
-    help='The maximum characters of a string that should be sent to Sentry (defaults to {0})'.format(DEFAULT_MAX_MESSAGE_LENGTH),
+    default=DEFAULT_STRING_MAX_LENGTH,
+    help='The maximum characters of a string that should be sent to Sentry (defaults to {0})'.format(DEFAULT_STRING_MAX_LENGTH),
 )
 parser.add_argument(
     '-q', '--quiet',
@@ -53,6 +53,7 @@ parser.add_argument(
     nargs=REMAINDER,
     help='The command to run',
 )
+
 
 def update_dsn(opts):
     """Update the Sentry DSN stored in local configs
@@ -75,6 +76,7 @@ def update_dsn(opts):
                 opts.dsn = conf.read().rstrip()
             return
 
+
 def run(args=argv[1:]):
     opts = parser.parse_args(args)
 
@@ -96,7 +98,7 @@ def run(args=argv[1:]):
         runner = CommandReporter(
             cmd=cmd,
             dsn=opts.dsn,
-            max_message_length=opts.max_message_length,
+            string_max_length=opts.string_max_length,
             quiet=opts.quiet
         )
         sys.exit(runner.run())
@@ -107,10 +109,10 @@ def run(args=argv[1:]):
 
 
 class CommandReporter(object):
-    def __init__(self, cmd, dsn, max_message_length, quiet=False):
+    def __init__(self, cmd, dsn, string_max_length, quiet=False):
         self.dsn = dsn
         self.command = cmd
-        self.max_message_length = max_message_length
+        self.string_max_length = string_max_length
         self.quiet = quiet
 
     def run(self):
@@ -139,7 +141,7 @@ class CommandReporter(object):
 
         message = "Command \"%s\" failed" % (self.command,)
 
-        client = Client(dsn=self.dsn, string_max_length=-1)
+        client = Client(dsn=self.dsn, string_max_length=self.string_max_length)
 
         client.captureMessage(
             message,
@@ -158,10 +160,10 @@ class CommandReporter(object):
     def _get_last_lines(self, buf):
         buf.seek(0, SEEK_END)
         file_size = buf.tell()
-        if file_size < self.max_message_length:
+        if file_size < self.string_max_length:
             buf.seek(0)
             last_lines = buf.read().decode('utf-8')
         else:
-            buf.seek(-(self.max_message_length - 3), SEEK_END)
+            buf.seek(-(self.string_max_length - 3), SEEK_END)
             last_lines = '...' + buf.read().decode('utf-8')
         return last_lines

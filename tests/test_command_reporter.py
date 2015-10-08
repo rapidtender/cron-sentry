@@ -1,11 +1,11 @@
 import mock
 import sys
-from cron_sentry.runner import CommandReporter, DEFAULT_MAX_MESSAGE_LENGTH, run, parser
+from cron_sentry.runner import CommandReporter, DEFAULT_STRING_MAX_LENGTH, run, parser
 
 
 @mock.patch('cron_sentry.runner.Client')
 def test_command_reporter_accepts_parameters(ClientMock):
-    reporter = CommandReporter(['date', '--invalid-option'], 'http://testdsn', DEFAULT_MAX_MESSAGE_LENGTH)
+    reporter = CommandReporter(['date', '--invalid-option'], 'http://testdsn', DEFAULT_STRING_MAX_LENGTH)
 
     reporter.run()
 
@@ -15,7 +15,7 @@ def test_command_reporter_accepts_parameters(ClientMock):
 
 @mock.patch('cron_sentry.runner.Client')
 def test_command_reporter_works_with_no_params_commands(ClientMock):
-    reporter = CommandReporter(['date'], 'http://testdsn', DEFAULT_MAX_MESSAGE_LENGTH)
+    reporter = CommandReporter(['date'], 'http://testdsn', DEFAULT_STRING_MAX_LENGTH)
 
     reporter.run()
 
@@ -32,7 +32,7 @@ sys.stdout.write("test-out")
 sys.stderr.write("test-err")
 sys.exit(2)
 """]
-    reporter = CommandReporter(command, 'http://testdsn', DEFAULT_MAX_MESSAGE_LENGTH)
+    reporter = CommandReporter(command, 'http://testdsn', DEFAULT_STRING_MAX_LENGTH)
     client = ClientMock()
 
     reporter.run()
@@ -60,12 +60,12 @@ sys.stdout.write("a" * 20000)
 sys.stderr.write("b" * 20000)
 sys.exit(2)
 """]
-    reporter = CommandReporter(command, 'http://testdsn', DEFAULT_MAX_MESSAGE_LENGTH)
+    reporter = CommandReporter(command, 'http://testdsn', DEFAULT_STRING_MAX_LENGTH)
     client = ClientMock()
 
     reporter.run()
-    expected_stdout = '...{0}'.format('a' * (DEFAULT_MAX_MESSAGE_LENGTH - 3))
-    expected_stderr = '...{0}'.format('b' * (DEFAULT_MAX_MESSAGE_LENGTH - 3))
+    expected_stdout = '...{0}'.format('a' * (DEFAULT_STRING_MAX_LENGTH - 3))
+    expected_stderr = '...{0}'.format('b' * (DEFAULT_STRING_MAX_LENGTH - 3))
 
     sys_mock.stdout.write.assert_called_with(expected_stdout)
     sys_mock.stderr.write.assert_called_with(expected_stderr)
@@ -91,7 +91,7 @@ def test_command_line_should_support_command_args_without_double_dashes(CommandR
     CommandReporterMock.assert_called_with(
         cmd=command[2:],
         dsn='http://testdsn',
-        max_message_length=DEFAULT_MAX_MESSAGE_LENGTH,
+        string_max_length=DEFAULT_STRING_MAX_LENGTH,
         quiet=False
     )
 
@@ -106,7 +106,7 @@ def test_command_line_should_support_command_with_double_dashes(CommandReporterM
     CommandReporterMock.assert_called_with(
         cmd=command[3:],
         dsn='http://testdsn',
-        max_message_length=DEFAULT_MAX_MESSAGE_LENGTH,
+        string_max_length=DEFAULT_STRING_MAX_LENGTH,
         quiet=False
     )
 
