@@ -25,7 +25,7 @@ optional arguments:
   --dsn SENTRY_DSN      Sentry server address
   -M STRING_MAX_LENGTH, --string-max-length STRING_MAX_LENGTH
                         The maximum characters of a string that should be sent
-                        to Sentry (defaults to 4094)
+                        to Sentry (defaults to 4096)
   -q, --quiet           suppress all command output
   --version             show program's version number and exit
 
