@@ -10,11 +10,9 @@ from time import time
 from .version import VERSION
 
 
-# More info:
-# * https://github.com/getsentry/sentry/blob/b44cdaa27e1ba3f27d217f7f7f45efaa5e742d0f/src/sentry/conf/server.py#L742-L744
-# * https://github.com/getsentry/sentry/blob/5d6b0fef0f4446128730d9c1f5940e7f071a4509/src/sentry/utils/safe.py#L68-L76
-# the value is 4094 because of `_size += 2` in the code linked above
-DEFAULT_STRING_MAX_LENGTH = 4094
+# 4096 is more than Sentry will accept by default. SENTRY_MAX_EXTRA_VARIABLE_SIZE in the Sentry configuration 
+# also needs to be increased to allow longer strings.
+DEFAULT_STRING_MAX_LENGTH = 4096
 
 
 parser = ArgumentParser(
