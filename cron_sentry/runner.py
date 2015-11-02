@@ -20,7 +20,7 @@ parser = ArgumentParser(
     epilog=('The Sentry server address can also be specified through ' +
             'the SENTRY_DSN environment variable ' +
             '(and the --dsn option can be omitted).'),
-    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M STRING_MAX_LENGHT] [--quiet] [--version] cmd [arg ...]',
+    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M STRING_MAX_LENGTH] [--quiet] [--version] cmd [arg ...]',
 )
 parser.add_argument(
     '--dsn',
