@@ -1,6 +1,11 @@
 current
 =======
 
+0.6.1
+=====
+
+* Default `string_max_length` to 4096 and pass it to `raven.Client` (https://github.com/Yipit/cron-sentry/pull/14 and https://github.com/Yipit/cron-sentry/issues/10)
+
 
 0.6.0
 =====
