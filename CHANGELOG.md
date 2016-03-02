@@ -1,6 +1,9 @@
 current
 =======
 
+* Use Raven's synchronous blocking transport (HTTPTransport)
+
+
 0.6.1
 =====
 
