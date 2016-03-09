@@ -1,6 +1,8 @@
 current
 =======
 
+* Change HTTPTransport import to be compatible with old versions of raven-python
+
 
 0.6.2
 =====

@@ -2,7 +2,7 @@ import sys
 from getpass import getuser
 from os import getenv, path, SEEK_END
 from raven import Client
-from raven.transport.http import HTTPTransport
+from raven.transport import HTTPTransport
 from subprocess import call
 from tempfile import TemporaryFile
 from argparse import ArgumentParser, REMAINDER
