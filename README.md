@@ -42,8 +42,6 @@ environment variable (and the --dsn option can be omitted).
 Example
 -------
 
-The below doewn't 
-
 `crontab -e`
 ```
 MAIL_TO="failover_for_broken_sentry@example.com"
