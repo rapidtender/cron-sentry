@@ -9,6 +9,7 @@ from argparse import ArgumentParser, REMAINDER
 from sys import argv
 from time import time
 from .version import VERSION
+import logging
 
 
 # 4096 is more than Sentry will accept by default. SENTRY_MAX_EXTRA_VARIABLE_SIZE in the Sentry configuration 
@@ -16,12 +17,13 @@ from .version import VERSION
 DEFAULT_STRING_MAX_LENGTH = 4096
 
 
+
 parser = ArgumentParser(
     description='Wraps commands and reports those that fail to Sentry.',
     epilog=('The Sentry server address can also be specified through ' +
             'the SENTRY_DSN environment variable ' +
             '(and the --dsn option can be omitted).'),
-    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M STRING_MAX_LENGTH] [--quiet] [--version] cmd [arg ...]',
+    usage='cron-sentry [-h] [--dsn SENTRY_DSN] [-M STRING_MAX_LENGTH] [--version] cmd [arg ...]',
 )
 parser.add_argument(
     '--dsn',
@@ -37,12 +39,6 @@ parser.add_argument(
     help='The maximum characters of a string that should be sent to Sentry (defaults to {0})'.format(DEFAULT_STRING_MAX_LENGTH),
 )
 parser.add_argument(
-    '-q', '--quiet',
-    action='store_true',
-    default=False,
-    help='suppress all command output'
-)
-parser.add_argument(
     '--version',
     action='version',
     version=VERSION,
@@ -52,6 +48,16 @@ parser.add_argument(
     nargs=REMAINDER,
     help='The command to run',
 )
+
+
+def enable_logging():
+    """Enable Error logging on the root logger"""
+    logging.basicConfig(level=logging.ERROR,
+                        format='%(asctime)s %(levelname)-8s %(name)s %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S')
+    # basic logging for the whole application....
+    logger = logging.getLogger()
+    logger.setLevel(logging.ERROR)
 
 
 def update_dsn(opts):
@@ -83,6 +89,8 @@ def run(args=argv[1:]):
     if not opts.dsn:
         update_dsn(opts)
 
+    enable_logging()
+
     if opts.cmd:
         # make cron-sentry work with both approaches:
         #
@@ -98,7 +106,6 @@ def run(args=argv[1:]):
             cmd=cmd,
             dsn=opts.dsn,
             string_max_length=opts.string_max_length,
-            quiet=opts.quiet
         )
         sys.exit(runner.run())
     else:
@@ -108,29 +115,33 @@ def run(args=argv[1:]):
 
 
 class CommandReporter(object):
-    def __init__(self, cmd, dsn, string_max_length, quiet=False):
+    def __init__(self, cmd, dsn, string_max_length):
         self.dsn = dsn
         self.command = cmd
         self.string_max_length = string_max_length
-        self.quiet = quiet
 
     def run(self):
         start = time()
 
         with TemporaryFile() as stdout:
             with TemporaryFile() as stderr:
-                exit_status = call(self.command, stdout=stdout, stderr=stderr)
+                try:
+                    exit_status = call(self.command, stdout=stdout, stderr=stderr)
+                except:
+                    exit_status = 1
 
-                last_lines_stdout = self._get_last_lines(stdout)
-                last_lines_stderr = self._get_last_lines(stderr)
-
+                send_failed = False
                 if exit_status > 0:
+                    last_lines_stdout = self._get_last_lines(stdout)
+                    last_lines_stderr = self._get_last_lines(stderr)
                     elapsed = int((time() - start) * 1000)
-                    self.report_fail(exit_status, last_lines_stdout, last_lines_stderr, elapsed)
+                    send_failed = self.report_fail(exit_status, last_lines_stdout, last_lines_stderr, elapsed)
 
-                if not self.quiet:
-                    sys.stdout.write(last_lines_stdout)
-                    sys.stderr.write(last_lines_stderr)
+                if send_failed:
+                    stdout.seek(0)
+                    stderr.seek(0)
+                    sys.stdout.write(stdout.read())
+                    sys.stderr.write(stderr.read())
 
                 return exit_status
 
@@ -142,6 +153,7 @@ class CommandReporter(object):
 
         client = Client(transport=HTTPTransport, dsn=self.dsn, string_max_length=self.string_max_length)
 
+        # if this fails, it will log to stderr (including the original command that failed)
         client.captureMessage(
             message,
             data={
@@ -155,6 +167,8 @@ class CommandReporter(object):
             },
             time_spent=elapsed
         )
+
+        return client.state.did_fail()
 
     def _get_last_lines(self, buf):
         buf.seek(0, SEEK_END)
