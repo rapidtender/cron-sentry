@@ -1,6 +1,11 @@
 current
 =======
 
+0.6.4
+=====
+
+* Don't swallow issues with sending to Sentry
+
 
 0.6.3
 =====
