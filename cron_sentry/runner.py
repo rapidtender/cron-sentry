@@ -17,6 +17,13 @@ import logging
 DEFAULT_STRING_MAX_LENGTH = 4096
 
 
+logging.basicConfig(level=logging.ERROR,
+                    format='%(asctime)s %(levelname)-8s %(name)s %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
+# basic logging for the whole application....
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
+
 
 parser = ArgumentParser(
     description='Wraps commands and reports those that fail to Sentry.',
@@ -50,15 +57,6 @@ parser.add_argument(
 )
 
 
-def enable_logging():
-    """Enable Error logging on the root logger"""
-    logging.basicConfig(level=logging.ERROR,
-                        format='%(asctime)s %(levelname)-8s %(name)s %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S')
-    # basic logging for the whole application....
-    logger = logging.getLogger()
-    logger.setLevel(logging.ERROR)
-
 
 def update_dsn(opts):
     """Update the Sentry DSN stored in local configs
@@ -88,8 +86,6 @@ def run(args=argv[1:]):
     # Command line takes precendence, otherwise check for local configs
     if not opts.dsn:
         update_dsn(opts)
-
-    enable_logging()
 
     if opts.cmd:
         # make cron-sentry work with both approaches:
