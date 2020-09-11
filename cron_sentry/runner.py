@@ -1,6 +1,6 @@
 import sys
 from getpass import getuser
-from os import getenv, path, SEEK_END
+from os import getenv, path, SEEK_END, environ
 from raven import Client
 from raven.transport import HTTPTransport
 from subprocess import call
@@ -35,7 +35,7 @@ parser = ArgumentParser(
 parser.add_argument(
     '--dsn',
     metavar='SENTRY_DSN',
-    default=getenv('SENTRY_DSN'),
+    default=environ['SENTRY_DSN'], # if there isn't a SENTRY_DSN explicitly set to nothing then we need to fail
     help='Sentry server address',
 )
 
