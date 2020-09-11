@@ -134,10 +134,13 @@ class CommandReporter(object):
                     send_failed = self.report_fail(exit_status, last_lines_stdout, last_lines_stderr, elapsed)
 
                 if send_failed:
-                    stdout.seek(0)
                     stderr.seek(0)
-                    sys.stdout.write(stdout.read())
-                    sys.stderr.write(stderr.read())
+                    error = stderr.read()
+                    error += "\nError running {}, but failed to send to Sentry".format(self.command)
+                    sys.stderr.write(error)
+
+                stdout.seek(0)
+                sys.stdout.write(stdout.read())
 
                 return exit_status
 
