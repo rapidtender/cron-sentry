@@ -1,6 +1,5 @@
 import sys
-from getpass import getuser
-from os import getenv, path, SEEK_END, environ
+from os import getenv, SEEK_END
 from raven import Client
 from raven.transport import HTTPTransport
 from subprocess import call
@@ -35,7 +34,7 @@ parser = ArgumentParser(
 parser.add_argument(
     '--dsn',
     metavar='SENTRY_DSN',
-    default=environ['SENTRY_DSN'], # if there isn't a SENTRY_DSN explicitly set to nothing then we need to fail
+    default=getenv('SENTRY_DSN'),
     help='Sentry server address',
 )
 
@@ -57,35 +56,14 @@ parser.add_argument(
 )
 
 
-
-def update_dsn(opts):
-    """Update the Sentry DSN stored in local configs
-
-    It's assumed that the file contains a DSN endpoint like this:
-    https://public_key:secret_key@app.getsentry.com/project_id
-
-    It could easily be extended to override all settings if there
-    were more use cases.
-    """
-
-    homedir = path.expanduser('~%s' % getuser())
-    home_conf_file = path.join(homedir, '.cron-sentry')
-    system_conf_file = '/etc/cron-sentry.conf'
-
-    conf_precedence = [home_conf_file, system_conf_file]
-    for conf_file in conf_precedence:
-        if path.exists(conf_file):
-            with open(conf_file, "r") as conf:
-                opts.dsn = conf.read().rstrip()
-            return
-
-
 def run(args=argv[1:]):
     opts = parser.parse_args(args)
 
-    # Command line takes precendence, otherwise check for local configs
-    if not opts.dsn:
-        update_dsn(opts)
+    if opts.dsn == "": # dsn has been explicitly set to an empty var
+        pass
+    if opts.dsn == None:
+        sys.stderr.write("ERROR: DSN is missing, set SENTRY_DSN to an empty variable in your environment to run cron-sentry without remote logging\n")
+        sys.exit(1)
 
     if opts.cmd:
         # make cron-sentry work with both approaches:
@@ -145,7 +123,7 @@ class CommandReporter(object):
                 return exit_status
 
     def report_fail(self, exit_status, last_lines_stdout, last_lines_stderr, elapsed):
-        if self.dsn is None:
+        if self.dsn == "":
             return
 
         message = "Command \"%s\" failed" % (self.command,)
